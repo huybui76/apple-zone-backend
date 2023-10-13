@@ -1,97 +1,136 @@
-const User = require("../models/UserModel")
-const bcrypt = require("bcrypt")
-const { generalAccessToken, generalRefreshToken } = require("./jwtService")
-const dotenv = require("dotenv")
+const User = require("../models/UserModel");
+const bcrypt = require("bcrypt");
+const { generalAccessToken, generalRefreshToken } = require("./jwtService");
 
-const createUser = (newUser) => {
-    return new Promise(async (resolve, reject) => {
-        const { name, email, password, confirmPassword, phone } = newUser
-        try {
+const createUser = async (newUser) => {
+    try {
+        const { name, email, password, phone } = newUser;
 
-            // check if user already exists
-            const checkUser = await User.findOne({ email: email })
-            if (checkUser !== null) { resolve({ status: 'OK', message: 'Email already in use' }) }
-
-            // make hash password
-            const hashPassword = bcrypt.hashSync(password, 10)
-
-            // create new user
-            const createUser = await User.create({ name, email, password: hashPassword, phone })
-            if (createUser) {
-                resolve({
-                    status: 'OK',
-                    message: 'SUCCESS',
-                    data: createUser
-                })
-            }
-        } catch (e) {
-            reject(e)
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return { status: 'ERR', message: 'Email already in use' };
         }
-    })
-}
-const loginUser = (loginUser) => {
-    return new Promise(async (resolve, reject) => {
-        const { name, email, password, confirmPassword, phone } = loginUser
-        try {
 
-            // check if user already exists
-            const checkUser = await User.findOne({ email: email })
-            if (checkUser === null) { resolve({ status: 'OK', message: 'User is not define' }) }
+        const hashPassword = await bcrypt.hash(password, 10);
+        const createUser = await User.create({ name, email, password: hashPassword, phone });
 
-            // Checking the password
-            const comparePassword = bcrypt.compare(password, checkUser.password)
-            if (!comparePassword) {
-                resolve({ status: 'OK', message: 'The password is incorrect' })
-            }
+        return {
+            status: 'OK',
+            message: 'CREATE USER SUCCESS',
+            data: createUser,
+        };
+    } catch (error) {
+        return { status: 'ERR', message: error.message };
+    }
+};
 
-            //add access token
-            const access_token = await generalAccessToken({
-                id: checkUser.id,
-                isAdmin: checkUser.isAdmin
-            })
+const loginUser = async (loginUser) => {
+    try {
+        const { email, password } = loginUser;
+        const existingUser = await User.findOne({ email });
 
-            const refresh_token = await generalRefreshToken({
-                id: checkUser.id,
-                isAdmin: checkUser.isAdmin
-            })
-            resolve({
-                status: 'OK',
-                message: 'SUCCESS',
-                access_token,
-                refresh_token
-            })
-
-        } catch (e) {
-            reject(e)
+        if (!existingUser) {
+            return { status: 'ERR', message: 'User is not defined' };
         }
-    })
-}
-const updateUser = (id, data) => {
-    return new Promise(async (resolve, reject) => {
 
-        try {
-
-            // check if user already exists
-            const checkUser = await User.findOne({ id: id })
-            if (checkUser !== null) { resolve({ status: 'OK', message: 'User is not define' }) }
-
-            //
-            const updateUser = await User.findByIdAndUpdate(id, data, { new: true })
-
-            resolve({
-                status: 'OK',
-                message: 'SUCCESS',
-                data: updateUser
-
-            })
-
-        } catch (e) {
-            reject(e)
+        const passwordMatch = await bcrypt.compare(password, existingUser.password);
+        if (!passwordMatch) {
+            return { status: 'ERR', message: 'The password is incorrect' };
         }
-    })
-}
+
+        const access_token = await generalAccessToken({
+            id: existingUser.id,
+            isAdmin: existingUser.isAdmin,
+        });
+
+        const refresh_token = await generalRefreshToken({
+            id: existingUser.id,
+            isAdmin: existingUser.isAdmin,
+        });
+
+        return {
+            status: 'OK',
+            message: 'LOGIN USER SUCCESS',
+            access_token,
+            refresh_token,
+        };
+    } catch (error) {
+        return { status: 'ERR', message: error.message };
+    }
+};
+
+const updateUser = async (id, data) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(id, data, { new: true });
+
+        if (!updatedUser) {
+            return { status: 'ERR', message: 'User is not defined' };
+        }
+
+        return {
+            status: 'OK',
+            message: 'UPDATE USER SUCCESS',
+            data: updatedUser,
+        };
+    } catch (error) {
+        return { status: 'ERR', message: error.message };
+    }
+};
+
+const deleteUser = async (id) => {
+    try {
+        const deletedUser = await User.findByIdAndDelete(id);
+
+        if (!deletedUser) {
+            return { status: 'ERR', message: 'User is not defined' };
+        }
+
+        return {
+            status: 'OK',
+            message: 'DELETE USER SUCCESS',
+        };
+    } catch (error) {
+        return { status: 'ERR', message: error.message };
+    }
+};
+
+const getAllUsers = async () => {
+    try {
+        const allUsers = await User.find();
+
+        return {
+            status: 'OK',
+            message: 'GET ALL USER SUCCESS',
+            data: allUsers,
+        };
+    } catch (error) {
+        return { status: 'ERR', message: error.message };
+    }
+};
+
+const getUser = async (id) => {
+    try {
+        const user = await User.findOne({ _id: id });
+
+        if (!user) {
+            return { status: 'ERR', message: 'User is not defined' };
+        }
+
+        return {
+            status: 'OK',
+            message: 'GET USER SUCCESS',
+            data: user,
+        };
+    } catch (error) {
+        return { status: 'ERR', message: error.message };
+    }
+};
+
 module.exports = {
     createUser,
     loginUser,
     updateUser,
-}
+    deleteUser,
+    getAllUsers,
+    getUser,
+};
