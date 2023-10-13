@@ -1,130 +1,145 @@
 const ProductService = require('../services/ProductService');
+const Joi = require('joi');
 
-const validateProduct = (req) => {
-    const { name, image, type, price, countInStock, rating, description, discount } = req.body;
-
-    if (!name || !image || !type || !price || !countInStock || !rating || !discount) {
-        return {
-            status: 'ERR',
-            message: 'Please enter all required information',
-        };
-    }
-
-    return null;
-};
-
-const genericErrorHandler = (res, e) => {
-    return res.status(404).json({
-        message: e,
-    });
-};
+const productSchema = Joi.object({
+    name: Joi.string().required(),
+    image: Joi.string().required(),
+    type: Joi.string().required(),
+    price: Joi.number().required(),
+    countInStock: Joi.number().required(),
+    rating: Joi.number().required(),
+    description: Joi.string().allow(''),
+    discount: Joi.number().allow(null).allow(''),
+    sold: Joi.number().allow(null).allow(''),
+});
 
 const createProduct = async (req, res) => {
-    const validationError = validateProduct(req);
-    if (validationError) {
-        return res.status(200).json(validationError);
-    }
-
     try {
+        const { error } = productSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: error.details[0].message,
+            });
+        }
+
         const response = await ProductService.createProduct(req.body);
         return res.status(200).json(response);
     } catch (e) {
-        return genericErrorHandler(res, e);
+        return res.status(500).json({
+            message: e,
+        });
     }
 };
 
 const updateProduct = async (req, res) => {
-    const productId = req.params.productId;
-    if (!productId) {
-        return res.status(200).json({
-            status: 'ERR',
-            message: 'Product ID is required',
-        });
-    }
-
     try {
-        const response = await ProductService.updateProduct(productId, req.body);
+        const productId = req.params.productId;
+        console.log(req.params)
+        const data = req.body;
+        if (!productId) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'The productId is required',
+            });
+        }
+
+        const response = await ProductService.updateProduct(productId, data);
         return res.status(200).json(response);
     } catch (e) {
-        return genericErrorHandler(res, e);
+        return res.status(500).json({
+            message: e,
+        });
+    }
+};
+
+const getDetailsProduct = async (req, res) => {
+    try {
+        const productId = req.params.productId;
+
+        if (!productId) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'The productId is required',
+            });
+        }
+
+        const response = await ProductService.getDetailsProduct(productId);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(500).json({
+            message: e,
+        });
     }
 };
 
 const deleteProduct = async (req, res) => {
-    const productId = req.params.productId;
-    if (!productId) {
-        return res.status(200).json({
-            status: 'ERR',
-            message: 'Product ID is required',
-        });
-    }
-
     try {
+        const productId = req.params.productId;
+        if (!productId) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'The productId is required',
+            });
+        }
+
         const response = await ProductService.deleteProduct(productId);
         return res.status(200).json(response);
     } catch (e) {
-        return genericErrorHandler(res, e);
-    }
-};
-
-const deleteManyProducts = async (req, res) => {
-    const productIds = req.params.productIds;
-    if (!productIds) {
-        return res.status(200).json({
-            status: 'ERR',
-            message: 'Product IDs are required',
+        return res.status(500).json({
+            message: e,
         });
     }
-
-    try {
-        const response = await ProductService.deleteManyProducts(productIds);
-        return res.status(200).json(response);
-    } catch (e) {
-        return genericErrorHandler(res, e);
-    }
 };
 
-const getAllProducts = async (req, res) => {
+const deleteMany = async (req, res) => {
     try {
-        const response = await ProductService.getAllProducts();
+        const ids = req.body.ids;
+        if (!ids) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'The ids is required',
+            });
+        }
+
+        const response = await ProductService.deleteManyProduct(ids);
         return res.status(200).json(response);
     } catch (e) {
-        return genericErrorHandler(res, e);
-    }
-};
-
-const getProduct = async (req, res) => {
-    const productId = req.params.productId;
-    if (!productId) {
-        return res.status(200).json({
-            status: 'ERR',
-            message: 'Product ID is required',
+        return res.status(500).json({
+            message: e,
         });
     }
+};
 
+const getAllProduct = async (req, res) => {
     try {
-        const response = await ProductService.getProduct(productId);
+        const { limit, page, sort, filter } = req.query;
+        const response = await ProductService.getAllProduct(Number(limit) || null, Number(page) || 0, sort, filter);
         return res.status(200).json(response);
     } catch (e) {
-        return genericErrorHandler(res, e);
+        return res.status(500).json({
+            message: e,
+        });
     }
 };
 
-const getAllTypes = async (req, res) => {
+const getAllType = async (req, res) => {
     try {
-        const response = await ProductService.getAllTypes();
+        const response = await ProductService.getAllType();
         return res.status(200).json(response);
     } catch (e) {
-        return genericErrorHandler(res, e);
+        return res.status(500).json({
+            message: e,
+        });
     }
 };
 
 module.exports = {
     createProduct,
     updateProduct,
+    getDetailsProduct,
     deleteProduct,
-    getAllProducts,
-    getProduct,
-    getAllTypes,
-    deleteManyProducts,
+    getAllProduct,
+    deleteMany,
+    getAllType,
 };

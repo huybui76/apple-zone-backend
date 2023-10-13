@@ -2,11 +2,22 @@ const Product = require('../models/ProductModel');
 
 const createProduct = async (newProduct) => {
     try {
-        const { name, image, type, price, countInStock, rating, description, discount } = newProduct;
+        const { name, image, type, countInStock, price, rating, description, discount } = newProduct;
+
+        if (!name || !image || !type || !countInStock || !price || !rating || !discount) {
+            return {
+                status: 'ERR',
+                message: 'Missing required fields',
+            };
+        }
 
         const existingProduct = await Product.findOne({ name });
+
         if (existingProduct) {
-            return { status: 'ERR', message: 'Product name already in use' };
+            return {
+                status: 'ERR',
+                message: 'Product name already in use',
+            };
         }
 
         const createdProduct = await Product.create({
@@ -22,11 +33,14 @@ const createProduct = async (newProduct) => {
 
         return {
             status: 'OK',
-            message: 'CREATE PRODUCT SUCCESS',
+            message: 'Product created successfully',
             data: createdProduct,
         };
     } catch (error) {
-        return { status: 'ERR', message: error.message };
+        return {
+            status: 'ERR',
+            message: error.message,
+        };
     }
 };
 
@@ -65,11 +79,11 @@ const deleteProduct = async (productId) => {
     }
 };
 
-const deleteManyProducts = async (productIds) => {
+const deleteManyProduct = async (productIds) => {
     try {
         const deletedProducts = await Product.deleteMany({ _id: { $in: productIds } });
 
-        if (!deletedProducts || deletedProducts.n === 0) {
+        if (!deletedProducts || deletedProducts.deletedCount === 0) {
             return { status: 'ERR', message: 'No products were deleted' };
         }
 
@@ -82,7 +96,7 @@ const deleteManyProducts = async (productIds) => {
     }
 };
 
-const getAllProducts = async (limit, page, sort, filter) => {
+const getAllProduct = async (limit, page, sort, filter) => {
     try {
         const query = {};
 
@@ -108,7 +122,7 @@ const getAllProducts = async (limit, page, sort, filter) => {
     }
 };
 
-const getProduct = async (productId) => {
+const getDetailsProduct = async (productId) => {
     try {
         const product = await Product.findOne({ _id: productId });
 
@@ -126,7 +140,7 @@ const getProduct = async (productId) => {
     }
 };
 
-const getAllTypes = async () => {
+const getAllType = async () => {
     try {
         const allTypes = await Product.distinct('type');
         return {
@@ -143,8 +157,8 @@ module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
-    deleteManyProducts,
-    getAllProducts,
-    getProduct,
-    getAllTypes,
+    deleteManyProduct,
+    getAllProduct,
+    getDetailsProduct,
+    getAllType,
 };

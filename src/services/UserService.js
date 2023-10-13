@@ -106,7 +106,7 @@ const deleteManyUsers = async (ids) => {
     }
 };
 
-const getAllUsers = async () => {
+const getAllUser = async () => {
     try {
         const allUsers = await User.find().sort({ createdAt: -1, updatedAt: -1 });
 
@@ -120,7 +120,7 @@ const getAllUsers = async () => {
     }
 };
 
-const getUser = async (id) => {
+const getDetailsUser = async (id) => {
     try {
         const user = await User.findOne({ _id: id });
 
@@ -147,7 +147,7 @@ module.exports = {
     loginUser,
     updateUser,
     deleteUser,
-    getAllUsers,
-    getUser,
+    getAllUser,
+    getDetailsUser,
     deleteManyUsers
 };
