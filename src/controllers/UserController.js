@@ -19,7 +19,7 @@ const validateUser = (req) => {
     } else if (password !== confirmPassword) {
         return {
             status: 'ERR',
-            message: 'The password is not equal to the confirm password',
+            message: 'The password does not match the confirm password',
         };
     }
 
@@ -27,15 +27,17 @@ const validateUser = (req) => {
 };
 
 const genericErrorHandler = (res, e) => {
-    return res.status(404).json({
-        message: e,
+    return res.status(500).json({
+        status: 'ERR',
+        message: 'An error occurred',
+        error: e.message,
     });
 };
 
 const createUser = async (req, res) => {
     const validationError = validateUser(req);
     if (validationError) {
-        return res.status(200).json(validationError);
+        return res.status(400).json(validationError);
     }
 
     try {
@@ -49,7 +51,7 @@ const createUser = async (req, res) => {
 const loginUser = async (req, res) => {
     const validationError = validateUser(req);
     if (validationError) {
-        return res.status(200).json(validationError);
+        return res.status(400).json(validationError);
     }
 
     try {
@@ -60,10 +62,22 @@ const loginUser = async (req, res) => {
     }
 };
 
+const logoutUser = async (req, res) => {
+    try {
+        res.clearCookie('refresh_token');
+        return res.status(200).json({
+            status: 'OK',
+            message: 'Logout successfully',
+        });
+    } catch (e) {
+        return genericErrorHandler(res, e);
+    }
+};
+
 const updateUser = async (req, res) => {
     const userId = req.params.userId;
     if (!userId) {
-        return res.status(200).json({
+        return res.status(400).json({
             status: 'ERR',
             message: 'UserId is required',
         });
@@ -80,7 +94,7 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     const userId = req.params.userId;
     if (!userId) {
-        return res.status(200).json({
+        return res.status(400).json({
             status: 'ERR',
             message: 'UserId is required',
         });
@@ -88,6 +102,23 @@ const deleteUser = async (req, res) => {
 
     try {
         const response = await UserService.deleteUser(userId);
+        return res.status(200).json(response);
+    } catch (e) {
+        return genericErrorHandler(res, e);
+    }
+};
+
+const deleteManyUsers = async (req, res) => {
+    const userIds = req.body.userIds;
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({
+            status: 'ERR',
+            message: 'UserIds is required as a non-empty array',
+        });
+    }
+
+    try {
+        const response = await UserService.deleteManyUsers(userIds);
         return res.status(200).json(response);
     } catch (e) {
         return genericErrorHandler(res, e);
@@ -106,7 +137,7 @@ const getAllUsers = async (req, res) => {
 const getUser = async (req, res) => {
     const userId = req.params.userId;
     if (!userId) {
-        return res.status(200).json({
+        return res.status(400).json({
             status: 'ERR',
             message: 'UserId is required',
         });
@@ -124,7 +155,7 @@ const refreshToken = async (req, res) => {
     const token = req.headers.token && req.headers.token.split(' ')[1];
 
     if (!token) {
-        return res.status(200).json({
+        return res.status(400).json({
             status: 'ERR',
             message: 'Token is required',
         });
@@ -146,4 +177,6 @@ module.exports = {
     getAllUsers,
     getUser,
     refreshToken,
+    deleteManyUsers,
+    logoutUser,
 };

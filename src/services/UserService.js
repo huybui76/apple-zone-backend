@@ -1,97 +1,153 @@
-const Product = require("../models/ProductModel");
+const User = require("../models/UserModel");
+const bcrypt = require("bcrypt");
+const { generalAccessToken, generalRefreshToken } = require("./jwtService");
 
-const createProduct = async (newProduct) => {
+const createUser = async (newUser) => {
     try {
-        const { name, image, type, price, countInStock, rating, description } = newProduct;
+        const { name, email, password, phone } = newUser;
 
-        const existingProduct = await Product.findOne({ name });
-        if (existingProduct) {
-            return { status: 'ERR', message: 'Product name already in use' };
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return { status: 'ERR', message: 'Email already in use' };
         }
 
-        const createdProduct = await Product.create({ name, image, type, price, countInStock, rating, description });
+        const hashPassword = await bcrypt.hash(password, 10);
+        const createUser = await User.create({ name, email, password: hashPassword, phone });
 
         return {
             status: 'OK',
-            message: 'CREATE PRODUCT SUCCESS',
-            data: createdProduct,
+            message: 'CREATE USER SUCCESS',
+            data: createUser,
         };
     } catch (error) {
-        return { status: 'ERR', message: error.message };
+        return handleUserError(error);
     }
 };
 
-const updateProduct = async (productId, data) => {
+const loginUser = async (loginUser) => {
     try {
-        const updatedProduct = await Product.findByIdAndUpdate(productId, data, { new: true });
+        const { email, password } = loginUser;
+        const existingUser = await User.findOne({ email });
 
-        if (!updatedProduct) {
-            return { status: 'ERR', message: 'Product is not defined' };
+        if (!existingUser) {
+            return { status: 'ERR', message: 'User is not defined' };
         }
 
-        return {
-            status: 'OK',
-            message: 'UPDATE PRODUCT SUCCESS',
-            data: updatedProduct,
-        };
-    } catch (error) {
-        return { status: 'ERR', message: error.message };
-    }
-};
-
-const deleteProduct = async (productId) => {
-    try {
-        const deletedProduct = await Product.findByIdAndDelete(productId);
-
-        if (!deletedProduct) {
-            return { status: 'ERR', message: 'Product is not defined' };
+        const passwordMatch = await bcrypt.compare(password, existingUser.password);
+        if (!passwordMatch) {
+            return { status: 'ERR', message: 'The password is incorrect' };
         }
 
-        return {
-            status: 'OK',
-            message: 'DELETE PRODUCT SUCCESS',
-        };
-    } catch (error) {
-        return { status: 'ERR', message: error.message };
-    }
-};
+        const access_token = await generalAccessToken({
+            id: existingUser.id,
+            isAdmin: existingUser.isAdmin,
+        });
 
-const getAllProducts = async () => {
-    try {
-        const allProducts = await Product.find();
+        const refresh_token = await generalRefreshToken({
+            id: existingUser.id,
+            isAdmin: existingUser.isAdmin,
+        });
 
         return {
             status: 'OK',
-            message: 'GET ALL PRODUCTS SUCCESS',
-            data: allProducts,
+            message: 'LOGIN USER SUCCESS',
+            access_token,
+            refresh_token,
         };
     } catch (error) {
-        return { status: 'ERR', message: error.message };
+        return handleUserError(error);
     }
 };
 
-const getProduct = async (productId) => {
+const updateUser = async (id, data) => {
     try {
-        const product = await Product.findOne({ _id: productId });
+        const updatedUser = await User.findByIdAndUpdate(id, data, { new: true });
 
-        if (!product) {
-            return { status: 'ERR', message: 'Product is not defined' };
+        if (!updatedUser) {
+            return { status: 'ERR', message: 'User is not defined' };
         }
 
         return {
             status: 'OK',
-            message: 'GET PRODUCT SUCCESS',
-            data: product,
+            message: 'UPDATE USER SUCCESS',
+            data: updatedUser,
         };
     } catch (error) {
-        return { status: 'ERR', message: error.message };
+        return handleUserError(error);
     }
+};
+
+const deleteUser = async (id) => {
+    try {
+        const deletedUser = await User.findByIdAndDelete(id);
+
+        if (!deletedUser) {
+            return { status: 'ERR', message: 'User is not defined' };
+        }
+
+        return {
+            status: 'OK',
+            message: 'DELETE USER SUCCESS',
+        };
+    } catch (error) {
+        return handleUserError(error);
+    }
+};
+
+const deleteManyUsers = async (ids) => {
+    try {
+        await User.deleteMany({ _id: { $in: ids } });
+        return {
+            status: 'OK',
+            message: 'Delete users success',
+        };
+    } catch (error) {
+        return handleUserError(error);
+    }
+};
+
+const getAllUsers = async () => {
+    try {
+        const allUsers = await User.find().sort({ createdAt: -1, updatedAt: -1 });
+
+        return {
+            status: 'OK',
+            message: 'GET ALL USER SUCCESS',
+            data: allUsers,
+        };
+    } catch (error) {
+        return handleUserError(error);
+    }
+};
+
+const getUser = async (id) => {
+    try {
+        const user = await User.findOne({ _id: id });
+
+        if (!user) {
+            return { status: 'ERR', message: 'User is not defined' };
+        }
+
+        return {
+            status: 'OK',
+            message: 'GET USER SUCCESS',
+            data: user,
+        };
+    } catch (error) {
+        return handleUserError(error);
+    }
+};
+
+const handleUserError = (error) => {
+    return { status: 'ERR', message: error.message };
 };
 
 module.exports = {
-    createProduct,
-    updateProduct,
-    deleteProduct,
-    getAllProducts,
-    getProduct,
+    createUser,
+    loginUser,
+    updateUser,
+    deleteUser,
+    getAllUsers,
+    getUser,
+    deleteManyUsers
 };

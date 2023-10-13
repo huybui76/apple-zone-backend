@@ -1,10 +1,9 @@
 const ProductService = require('../services/ProductService');
-const JwtService = require('../services/jwtService');
 
 const validateProduct = (req) => {
-    const { name, image, type, price, countInStock, rating, description } = req.body;
+    const { name, image, type, price, countInStock, rating, description, discount } = req.body;
 
-    if (!name || !image || !type || !price || !countInStock || !rating) {
+    if (!name || !image || !type || !price || !countInStock || !rating || !discount) {
         return {
             status: 'ERR',
             message: 'Please enter all required information',
@@ -68,6 +67,23 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+const deleteManyProducts = async (req, res) => {
+    const productIds = req.params.productIds;
+    if (!productIds) {
+        return res.status(200).json({
+            status: 'ERR',
+            message: 'Product IDs are required',
+        });
+    }
+
+    try {
+        const response = await ProductService.deleteManyProducts(productIds);
+        return res.status(200).json(response);
+    } catch (e) {
+        return genericErrorHandler(res, e);
+    }
+};
+
 const getAllProducts = async (req, res) => {
     try {
         const response = await ProductService.getAllProducts();
@@ -94,10 +110,21 @@ const getProduct = async (req, res) => {
     }
 };
 
+const getAllTypes = async (req, res) => {
+    try {
+        const response = await ProductService.getAllTypes();
+        return res.status(200).json(response);
+    } catch (e) {
+        return genericErrorHandler(res, e);
+    }
+};
+
 module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
     getAllProducts,
     getProduct,
+    getAllTypes,
+    deleteManyProducts,
 };
