@@ -1,6 +1,7 @@
 const User = require("../models/UserModel")
 const bcrypt = require("bcrypt")
 const { generalAccessToken, generalRefreshToken } = require("./jwtService")
+const dotenv = require("dotenv")
 
 const createUser = (newUser) => {
     return new Promise(async (resolve, reject) => {
@@ -65,7 +66,32 @@ const loginUser = (loginUser) => {
         }
     })
 }
+const updateUser = (id, data) => {
+    return new Promise(async (resolve, reject) => {
+
+        try {
+
+            // check if user already exists
+            const checkUser = await User.findOne({ id: id })
+            if (checkUser !== null) { resolve({ status: 'OK', message: 'User is not define' }) }
+
+            //
+            const updateUser = await User.findByIdAndUpdate(id, data, { new: true })
+
+            resolve({
+                status: 'OK',
+                message: 'SUCCESS',
+                data: updateUser
+
+            })
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 module.exports = {
     createUser,
     loginUser,
+    updateUser,
 }
