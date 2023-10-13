@@ -1,125 +1,87 @@
-const User = require("../models/UserModel");
-const bcrypt = require("bcrypt");
-const { generalAccessToken, generalRefreshToken } = require("./jwtService");
+const Product = require("../models/ProductModel");
 
-const createUser = async (newUser) => {
+const createProduct = async (newProduct) => {
     try {
-        const { name, email, password, phone } = newUser;
+        const { name, image, type, price, countInStock, rating, description } = newProduct;
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return { status: 'ERR', message: 'Email already in use' };
+        const existingProduct = await Product.findOne({ name });
+        if (existingProduct) {
+            return { status: 'ERR', message: 'Product name already in use' };
         }
 
-        const hashPassword = await bcrypt.hash(password, 10);
-        const createUser = await User.create({ name, email, password: hashPassword, phone });
+        const createdProduct = await Product.create({ name, image, type, price, countInStock, rating, description });
 
         return {
             status: 'OK',
-            message: 'CREATE USER SUCCESS',
-            data: createUser,
+            message: 'CREATE PRODUCT SUCCESS',
+            data: createdProduct,
         };
     } catch (error) {
         return { status: 'ERR', message: error.message };
     }
 };
 
-const loginUser = async (loginUser) => {
+const updateProduct = async (productId, data) => {
     try {
-        const { email, password } = loginUser;
-        const existingUser = await User.findOne({ email });
+        const updatedProduct = await Product.findByIdAndUpdate(productId, data, { new: true });
 
-        if (!existingUser) {
-            return { status: 'ERR', message: 'User is not defined' };
+        if (!updatedProduct) {
+            return { status: 'ERR', message: 'Product is not defined' };
         }
-
-        const passwordMatch = await bcrypt.compare(password, existingUser.password);
-        if (!passwordMatch) {
-            return { status: 'ERR', message: 'The password is incorrect' };
-        }
-
-        const access_token = await generalAccessToken({
-            id: existingUser.id,
-            isAdmin: existingUser.isAdmin,
-        });
-
-        const refresh_token = await generalRefreshToken({
-            id: existingUser.id,
-            isAdmin: existingUser.isAdmin,
-        });
 
         return {
             status: 'OK',
-            message: 'LOGIN USER SUCCESS',
-            access_token,
-            refresh_token,
+            message: 'UPDATE PRODUCT SUCCESS',
+            data: updatedProduct,
         };
     } catch (error) {
         return { status: 'ERR', message: error.message };
     }
 };
 
-const updateUser = async (id, data) => {
+const deleteProduct = async (productId) => {
     try {
-        const updatedUser = await User.findByIdAndUpdate(id, data, { new: true });
+        const deletedProduct = await Product.findByIdAndDelete(productId);
 
-        if (!updatedUser) {
-            return { status: 'ERR', message: 'User is not defined' };
+        if (!deletedProduct) {
+            return { status: 'ERR', message: 'Product is not defined' };
         }
 
         return {
             status: 'OK',
-            message: 'UPDATE USER SUCCESS',
-            data: updatedUser,
+            message: 'DELETE PRODUCT SUCCESS',
         };
     } catch (error) {
         return { status: 'ERR', message: error.message };
     }
 };
 
-const deleteUser = async (id) => {
+const getAllProducts = async () => {
     try {
-        const deletedUser = await User.findByIdAndDelete(id);
-
-        if (!deletedUser) {
-            return { status: 'ERR', message: 'User is not defined' };
-        }
+        const allProducts = await Product.find();
 
         return {
             status: 'OK',
-            message: 'DELETE USER SUCCESS',
+            message: 'GET ALL PRODUCTS SUCCESS',
+            data: allProducts,
         };
     } catch (error) {
         return { status: 'ERR', message: error.message };
     }
 };
 
-const getAllUsers = async () => {
+const getProduct = async (productId) => {
     try {
-        const allUsers = await User.find();
+        const product = await Product.findOne({ _id: productId });
 
-        return {
-            status: 'OK',
-            message: 'GET ALL USER SUCCESS',
-            data: allUsers,
-        };
-    } catch (error) {
-        return { status: 'ERR', message: error.message };
-    }
-};
-
-const getUser = async (id) => {
-    try {
-        const user = await User.findOne({ _id: id });
-
-        if (!user) {
-            return { status: 'ERR', message: 'User is not defined' };
+        if (!product) {
+            return { status: 'ERR', message: 'Product is not defined' };
         }
 
         return {
             status: 'OK',
-            message: 'GET USER SUCCESS',
-            data: user,
+            message: 'GET PRODUCT SUCCESS',
+            data: product,
         };
     } catch (error) {
         return { status: 'ERR', message: error.message };
@@ -127,10 +89,9 @@ const getUser = async (id) => {
 };
 
 module.exports = {
-    createUser,
-    loginUser,
-    updateUser,
-    deleteUser,
-    getAllUsers,
-    getUser,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    getAllProducts,
+    getProduct,
 };
