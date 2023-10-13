@@ -2,68 +2,44 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const handleAuthenticationError = (res) => {
+    return res.status(404).json({
+        message: 'Authentication error',
+        status: 'ERROR',
+    })
+}
+
 const authMiddleware = (req, res, next) => {
     const tokenHeader = req.headers.token;
 
     if (!tokenHeader) {
-        return res.status(401).json({
-            message: 'Unauthorized - Token header is missing',
-            status: 'ERROR'
-        });
+        return handleAuthenticationError(res)
     }
 
-    const token = tokenHeader.split(' ')[1];
+    const accessToken = tokenHeader.split(' ')[1];
 
-    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
-        if (err) {
-            return res.status(401).json({
-                message: 'Unauthorized - No permission to access this resource',
-                status: 'ERROR'
-            });
+    jwt.verify(accessToken, process.env.ACCESS_TOKEN, (err, user) => {
+        if (err || !user.isAdmin) {
+            return handleAuthenticationError(res)
         }
-
-        const { payload } = user;
-        // Check if the user has admin permit access
-        if (payload?.isAdmin) {
-            next();
-        } else {
-            return res.status(403).json({
-                message: 'Forbidden - Insufficient permissions to access this resource',
-                status: 'ERROR'
-            });
-        }
+        next();
     });
 };
 const authUserMiddleware = (req, res, next) => {
     const tokenHeader = req.headers.token;
-    const userId = req.params.id
+
     if (!tokenHeader) {
-        return res.status(401).json({
-            message: 'Unauthorized - Token header is missing',
-            status: 'ERROR'
-        });
+        return handleAuthenticationError(res)
     }
 
-    const token = tokenHeader.split(' ')[1];
+    const accessToken = tokenHeader.split(' ')[1];
+    const userId = req.params.id
 
-    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
-        if (err) {
-            return res.status(401).json({
-                message: 'Unauthorized - No permission to access this resource',
-                status: 'ERROR'
-            });
+    jwt.verify(accessToken, process.env.ACCESS_TOKEN, (err, user) => {
+        if (err || !user.isAdmin && user.id !== userId) {
+            return handleAuthenticationError(res)
         }
-
-        const { payload } = user;
-        // Check if the user has admin permit access
-        if (payload?.isAdmin || payload?.id === userId) {
-            next();
-        } else {
-            return res.status(403).json({
-                message: 'Forbidden - Insufficient permissions to access this resource',
-                status: 'ERROR'
-            });
-        }
+        next();
     });
 };
 
