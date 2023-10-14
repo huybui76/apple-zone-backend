@@ -12,7 +12,7 @@ router.delete('/deleteUser/:userId', authMiddleware, userController.deleteUser);
 router.get('/getAllUsers', authMiddleware, userController.getAllUser);
 router.get('/getDetailsUser/:userId', authUserMiddleware, userController.getDetailsUser);
 router.post('/refreshToken', userController.refreshToken);
-router.post('/deleteMany', userController.deleteManyUsers);
+router.post('/deleteMany', authMiddleware, userController.deleteManyUsers);
 
 
 module.exports = router;

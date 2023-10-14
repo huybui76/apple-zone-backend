@@ -5,9 +5,9 @@ const Joi = require('joi');
 const createUserSchema = Joi.object({
     name: Joi.string().required(),
     email: Joi.string().email().required(),
-    password: Joi.string().required(),
+    password: Joi.string().required().min(6),
     confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
-    phone: Joi.string().required(),
+    phone: Joi.string().required().min(9),
 
 });
 
@@ -64,12 +64,12 @@ const loginUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const userId = req.params.userId;
-        console.log(req.params)
+
         const data = req.body;
         if (!userId) {
             return res.status(400).json({
                 status: 'ERR',
-                message: 'userId is required',
+                message: 'UserId is required',
             });
         }
 

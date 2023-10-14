@@ -61,6 +61,12 @@ const loginUser = async (loginUser) => {
 
 const updateUser = async (id, data) => {
     try {
+        const existingUser = await User.findById(id)
+
+        if (!existingUser.isAdmin || existingUser.id !== id) {
+            return { status: 'ERR', message: 'Permission denied' };
+        }
+
         const updatedUser = await User.findByIdAndUpdate(id, data, { new: true });
 
         if (!updatedUser) {

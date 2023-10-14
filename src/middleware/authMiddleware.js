@@ -38,8 +38,7 @@ const authUserMiddleware = (req, res, next) => {
 
     jwt.verify(accessToken, process.env.ACCESS_TOKEN, (err, user) => {
 
-        if (err || !user.isAdmin && user.userId !== userId) {
-
+        if (err || user.id !== userId) {
             return handleAuthenticationError(res)
         }
         next();
