@@ -32,7 +32,7 @@ const createProduct = async (newProduct) => {
         const newProductDocument = new Product({
             name,
             image,
-            type, // Sử dụng giá trị kiểu ObjectId
+            type,
             countInStock: Number(countInStock),
             price,
             rating,

@@ -48,7 +48,7 @@ const updateProductType = async (productTypeId, data) => {
 
         return {
             status: 'OK',
-            message: 'UPDATE PRODUCTTYPE SUCCESS',
+            message: 'UPDATE PRODUCT TYPE SUCCESS',
             data: updatedProductType,
         };
     } catch (error) {
@@ -66,7 +66,7 @@ const deleteProductType = async (productTypeId) => {
 
         return {
             status: 'OK',
-            message: 'DELETE PRODUCTTYPE SUCCESS',
+            message: 'DELETE PRODUCT TYPE SUCCESS',
         };
     } catch (error) {
         return { status: 'ERR', message: error.message };
@@ -79,7 +79,7 @@ const getAllProductTypes = async () => {
         const allProductType = await ProductType.find();
         return {
             status: 'OK',
-            message: 'GET ALL PRODUCTTYPE SUCCESS',
+            message: 'GET ALL PRODUCT TYPE SUCCESS',
             data: allProductType,
         };
     }
@@ -98,7 +98,7 @@ const getDetailsProductType = async (productTypeId) => {
 
         return {
             status: 'OK',
-            message: 'GET PRODUCTTYPE SUCCESS',
+            message: 'GET PRODUCT TYPE SUCCESS',
             data: productType,
         };
     } catch (error) {
