@@ -35,7 +35,7 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const productId = req.params.productId;
-        console.log(req.params)
+
         const data = req.body;
         if (!productId) {
             return res.status(400).json({
@@ -123,9 +123,19 @@ const getAllProduct = async (req, res) => {
     }
 };
 
-const getAllType = async (req, res) => {
+const getProductByType = async (req, res) => {
     try {
-        const response = await ProductService.getAllType();
+        const productTypeId = req.params.productTypeId;
+
+        if (!productTypeId) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'The productTypeId is required',
+            });
+        }
+        //const { limit, page, sort, filter } = req.query;
+        const response = await ProductService.getProductByType(productTypeId);
+
         return res.status(200).json(response);
     } catch (e) {
         return res.status(500).json({
@@ -141,5 +151,5 @@ module.exports = {
     deleteProduct,
     getAllProduct,
     deleteMany,
-    getAllType,
+    getProductByType,
 };

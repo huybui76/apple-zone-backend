@@ -1,9 +1,13 @@
 const Product = require('../models/ProductModel');
+const ProductType = require('../models/ProductTypeModel');
+
+
 
 const createProduct = async (newProduct) => {
     try {
         const { name, image, type, countInStock, price, rating, description, discount } = newProduct;
 
+        // Check if required fields are missing
         if (!name || !image || !type || !countInStock || !price || !rating || !discount) {
             return {
                 status: 'ERR',
@@ -11,6 +15,7 @@ const createProduct = async (newProduct) => {
             };
         }
 
+        // Check if a product with the same name already exists
         const existingProduct = await Product.findOne({ name });
 
         if (existingProduct) {
@@ -20,16 +25,23 @@ const createProduct = async (newProduct) => {
             };
         }
 
-        const createdProduct = await Product.create({
+        // Convert the "type" field to ObjectId
+
+
+        // Create a new product document
+        const newProductDocument = new Product({
             name,
             image,
-            type,
+            type, // Sử dụng giá trị kiểu ObjectId
             countInStock: Number(countInStock),
             price,
             rating,
             description,
             discount: Number(discount),
         });
+
+        // Save the new product document to the database
+        const createdProduct = await newProductDocument.save();
 
         return {
             status: 'OK',
@@ -43,6 +55,8 @@ const createProduct = async (newProduct) => {
         };
     }
 };
+
+
 
 const updateProduct = async (productId, data) => {
     try {
@@ -140,18 +154,36 @@ const getDetailsProduct = async (productId) => {
     }
 };
 
-const getAllType = async () => {
+const getProductByType = async (productTypeId) => {
     try {
-        const allTypes = await Product.distinct('type');
+        const productType = await ProductType.findOne({ _id: productTypeId });
+
+        if (!productType) {
+            return {
+                status: 'ERR',
+                message: 'Product type not found',
+            };
+        }
+        const products = await Product.find({ type: productType._id })
+        const totalProducts = await Product.countDocuments({ type: productType._id });
+
         return {
             status: 'OK',
             message: 'Success',
-            data: allTypes,
+            data: products,
+            totalProducts: totalProducts
+
+
         };
     } catch (error) {
-        return { status: 'ERR', message: error.message };
+        return {
+            status: 'ERR',
+            message: error.message,
+        };
     }
 };
+
+
 
 module.exports = {
     createProduct,
@@ -160,5 +192,5 @@ module.exports = {
     deleteManyProduct,
     getAllProduct,
     getDetailsProduct,
-    getAllType,
+    getProductByType,
 };
