@@ -5,7 +5,7 @@ const ProductType = require('../models/ProductTypeModel');
 
 const createProduct = async (newProduct) => {
     try {
-        const { name, image, type, countInStock, price, rating, description, discount } = newProduct;
+        const { name, image, type, countInStock, price, rating, description, discount, sold } = newProduct;
 
         // Check if required fields are missing
         if (!name || !image || !type || !countInStock || !price || !rating || !discount) {
@@ -38,6 +38,7 @@ const createProduct = async (newProduct) => {
             rating,
             description,
             discount: Number(discount),
+            sold
         });
 
         // Save the new product document to the database
@@ -135,6 +136,20 @@ const getAllProduct = async (limit, page, sort, filter) => {
         return { status: 'ERR', message: error.message };
     }
 };
+const getCountProduct = async () => {
+    try {
+
+        const totalProduct = await Product.countDocuments();
+        return {
+            status: 'OK',
+            message: 'Success',
+            data: totalProduct,
+
+        };
+    } catch (error) {
+        return { status: 'ERR', message: error.message };
+    }
+};
 
 const getDetailsProduct = async (productId) => {
     try {
@@ -193,4 +208,5 @@ module.exports = {
     getAllProduct,
     getDetailsProduct,
     getProductByType,
+    getCountProduct
 };

@@ -87,6 +87,20 @@ const getAllProductTypes = async () => {
         return { status: 'ERR', message: error.message };
     }
 };
+const getCountProductType = async () => {
+    try {
+        const countProductType = await ProductType.find().select('-image');
+        return {
+            status: 'OK',
+            message: 'GET COUNT PRODUCT TYPE SUCCESS',
+            data: countProductType,
+        };
+    }
+    catch (error) {
+        return { status: 'ERR', message: error.message };
+    }
+};
+
 
 const getDetailsProductType = async (productTypeId) => {
     try {
@@ -112,4 +126,5 @@ module.exports = {
     deleteProductType,
     getAllProductTypes,
     getDetailsProductType,
+    getCountProductType
 };

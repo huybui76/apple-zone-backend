@@ -3,7 +3,7 @@ const Joi = require('joi');
 
 const productSchema = Joi.object({
     name: Joi.string().required(),
-    image: Joi.string().required(),
+    image: Joi.array().items(Joi.string()).required(),
     type: Joi.string().required(),
     price: Joi.number().required(),
     countInStock: Joi.number().required(),
@@ -122,6 +122,18 @@ const getAllProduct = async (req, res) => {
         });
     }
 };
+const getCountProduct = async (req, res) => {
+    try {
+        const { limit, page, sort, filter } = req.query;
+        const response = await ProductService.getCountProduct(Number(limit) || null, Number(page) || 0, sort, filter);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(500).json({
+            message: e,
+        });
+    }
+};
+
 
 const getProductByType = async (req, res) => {
     try {
@@ -152,4 +164,5 @@ module.exports = {
     getAllProduct,
     deleteMany,
     getProductByType,
+    getCountProduct
 };

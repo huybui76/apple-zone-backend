@@ -4,9 +4,10 @@ const Joi = require('joi');
 
 const createUserSchema = Joi.object({
     name: Joi.string().required(),
+    isAdmin: Joi.boolean().required(),
     email: Joi.string().email().required(),
     password: Joi.string().required().min(6),
-    confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
+    confirmPassword: Joi.string().valid(Joi.ref('password')),
     phone: Joi.string().required().min(9),
 
 });

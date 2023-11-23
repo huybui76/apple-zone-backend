@@ -5,11 +5,12 @@ const { authMiddleware, authUserMiddleware } = require('../middleware/authMiddle
 
 // User Routes
 router.post('/createProduct', ProductController.createProduct);
-router.put('/updateProduct/:productId', authMiddleware, ProductController.updateProduct);
-router.delete('/deleteProduct/:productId', authMiddleware, ProductController.deleteProduct);
+router.put('/updateProduct/:productId', ProductController.updateProduct);
+router.delete('/deleteProduct/:productId', ProductController.deleteProduct);
 router.get('/getAllProducts', ProductController.getAllProduct);
+router.get('/getCountProduct', ProductController.getCountProduct);
 router.get('/getProduct/:productId', ProductController.getDetailsProduct);
-router.post('/deleteMany', authMiddleware, ProductController.deleteMany)
+router.post('/deleteMany', ProductController.deleteMany)
 router.get('/getProductByType/:productTypeId', ProductController.getProductByType)
 
 
