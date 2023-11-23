@@ -2,7 +2,6 @@ const Product = require('../models/ProductModel');
 const ProductType = require('../models/ProductTypeModel');
 
 
-
 const createProduct = async (newProduct) => {
     try {
         const { name, image, type, countInStock, price, rating, description, discount } = newProduct;
