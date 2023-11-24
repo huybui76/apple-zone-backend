@@ -85,19 +85,19 @@ const createOrder = async (newOrder) => {
         shippingAddress: {
           fullName,
           address,
-          city,
+          //city,
           phone,
         },
-        paymentMethod,
+        //paymentMethod,
         itemsPrice,
         shippingPrice,
         totalPrice,
         user: user,
-        isPaid,
-        paidAt,
+        //isPaid,
+        //paidAt,
       });
       if (createOrder) {
-        await EmailService.sendEmailCreateOrder(email, orderItems);
+        //await EmailService.sendEmailCreateOrder(email, orderItems);
         resolve({
           status: "OK",
           message: "success",
@@ -118,20 +118,20 @@ const getAllOrderDetails = async (id) => {
       user: id,
     }).sort({ createdAt: -1, updatedAt: -1 });
     if (order === null) {
-      return{
+      return {
         status: "ERR",
         message: "The order is not defined",
       };
     }
 
-    return{
+    return {
       status: "OK",
       message: "SUCESSS",
       data: order,
     };
   } catch (e) {
     // console.log('e', e)
-     return { status: 'ERR', message: error.message };
+    return { status: 'ERR', message: error.message };
   }
 };
 
@@ -147,14 +147,14 @@ const getOrderDetails = async (id) => {
       });
     }
 
-    return{
+    return {
       status: "OK",
       message: "SUCESSS",
       data: order,
     };
   } catch (e) {
     // console.log('e', e)
-     return { status: 'ERR', message: error.message };
+    return { status: 'ERR', message: error.message };
   }
 };
 
@@ -178,7 +178,7 @@ const cancelOrderDetails = async (id, data) => {
       if (productData) {
         order = await Order.findByIdAndDelete(id);
         if (order === null) {
-          return{
+          return {
             status: "ERR",
             message: "The order is not defined",
           };
@@ -195,35 +195,35 @@ const cancelOrderDetails = async (id, data) => {
     const newData = results && results[0] && results[0].id;
 
     if (newData) {
-      return{
+      return {
         status: "ERR",
         message: `San pham voi id: ${newData} khong ton tai`,
       };
     }
-    return{
+    return {
       status: "OK",
       message: "success",
       data: order,
     };
   } catch (e) {
-     return { status: 'ERR', message: error.message };
+    return { status: 'ERR', message: error.message };
   }
 };
 
 const getAllOrder = async () => {
-    try {
-      const allOrder = await Order.find().sort({
-        createdAt: -1,
-        updatedAt: -1,
-      });
-      return{
-        status: "OK",
-        message: "Success",
-        data: allOrder,
-      };
-    } catch (e) {
-       return { status: 'ERR', message: error.message };
-    }
+  try {
+    const allOrder = await Order.find().sort({
+      createdAt: -1,
+      updatedAt: -1,
+    });
+    return {
+      status: "OK",
+      message: "Success",
+      data: allOrder,
+    };
+  } catch (e) {
+    return { status: 'ERR', message: error.message };
+  }
 };
 
 module.exports = {
