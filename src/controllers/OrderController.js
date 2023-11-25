@@ -2,24 +2,28 @@ const OrderService = require('../services/OrderService')
 const Joi = require('joi');
 
 const orderSchema = Joi.object({
-  paymentMethod: Joi.string().required(),
-  itemsPrice: Joi.number().required(),
-  shippingPrice: Joi.number().required(),
-  totalPrice: Joi.number().required(),
-  user: Joi.string().required(),
-  paidAt: Joi.number().required(),
-  deliveredAt: Joi.number().required(),
-  phone: Joi.number().required(),
+    itemsPrice: Joi.number().required(),
+    shippingPrice: Joi.number().required(),
+    totalPrice: Joi.number().required(),
+    phone: Joi.number().required(),
+    fullName: Joi.string().required(),
+    address: Joi.string().required(),
+    orderItems: Joi.array(),
+    paymentMethod: Joi.string().required(),
+
+    //user: Joi.string().required(),
+    //paidAt: Joi.number().required(),
+    //deliveredAt: Joi.number().required(),
 })
 
 const createOrder = async (req, res) => {
-    try { 
-        const {error} = orderSchema.validate(req.body);
-        if(error){
-          return res.status(404).json({
-            status: 'ERR',
-            message: error.details[0].message,
-          })
+    try {
+        const { error } = orderSchema.validate(req.body);
+        if (error) {
+            return res.status(404).json({
+                status: 'ERR',
+                message: error.details[0].message,
+            })
         }
         const response = await OrderService.createOrder(req.body)
         return res.status(200).json(response)
@@ -30,19 +34,18 @@ const createOrder = async (req, res) => {
     }
 }
 
-const getAllOrderDetails = async (req, res) => {
+const getOrderByPhone = async (req, res) => {
     try {
-        const userId = req.params.id
-        if (!userId) {
+        const phone = req.params.id
+        if (!phone) {
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The userId is required'
+                message: 'The phone is required'
             })
         }
-        const response = await OrderService.getAllOrderDetails(userId)
+        const response = await OrderService.getOrderByPhone(phone)
         return res.status(200).json(response)
     } catch (error) {
-        // console.log(e)
         return res.status(404).json({
             message: error
         })
@@ -55,13 +58,12 @@ const getDetailsOrder = async (req, res) => {
         if (!orderId) {
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The userId is required'
+                message: 'The orderId is required'
             })
         }
         const response = await OrderService.getOrderDetails(orderId)
         return res.status(200).json(response)
     } catch (error) {
-        // console.log(e)
         return res.status(404).json({
             message: error
         })
@@ -70,8 +72,9 @@ const getDetailsOrder = async (req, res) => {
 
 const cancelOrderDetails = async (req, res) => {
     try {
-        const data= req.body.orderItems
-        const orderId= req.body.orderId
+        const data = req.body.orderItems
+        const orderId = req.params.id
+        //console.log("ffffffffffffffff", data, orderId)
         if (!orderId) {
             return res.status(200).json({
                 status: 'ERR',
@@ -79,9 +82,9 @@ const cancelOrderDetails = async (req, res) => {
             })
         }
         const response = await OrderService.cancelOrderDetails(orderId, data)
+
         return res.status(200).json(response)
     } catch (error) {
-        // console.log(e)
         return res.status(404).json({
             message: error
         })
@@ -93,7 +96,6 @@ const getAllOrder = async (req, res) => {
         const data = await OrderService.getAllOrder()
         return res.status(200).json(data)
     } catch (error) {
-        // console.log(e)
         return res.status(404).json({
             message: error
         })
@@ -102,7 +104,7 @@ const getAllOrder = async (req, res) => {
 
 module.exports = {
     createOrder,
-    getAllOrderDetails,
+    getOrderByPhone,
     getDetailsOrder,
     cancelOrderDetails,
     getAllOrder

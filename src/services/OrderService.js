@@ -1,6 +1,6 @@
 const Order = require("../models/OrderModel");
 const Product = require("../models/ProductModel");
-const EmailService = require("../services/EmailService");
+
 
 const createOrder = async (newOrder) => {
   try {
@@ -12,13 +12,9 @@ const createOrder = async (newOrder) => {
       totalPrice,
       fullName,
       address,
-      city,
       phone,
-      user,
-      isPaid,
-      paidAt,
-      email,
     } = newOrder;
+
     if (
       !orderItems ||
       !paymentMethod ||
@@ -26,12 +22,7 @@ const createOrder = async (newOrder) => {
       !shippingPrice ||
       !totalPrice ||
       !fullName ||
-      !city ||
-      !phone ||
-      !user ||
-      !isPaid ||
-      !paidAt ||
-      !email
+      !phone
     ) {
       return {
         status: "ERR",
@@ -39,8 +30,8 @@ const createOrder = async (newOrder) => {
       };
     }
 
-    // Kiểm tra xem số lượng đon hàng đủ cung cấp không
-    const checkEnough = orderItems.map(async (order) => {
+    // Check if the quantity of items in the order is sufficient
+    const checkEnough = await Promise.all(orderItems.map(async (order) => {
       const productData = await Product.findOneAndUpdate(
         {
           _id: order.product,
@@ -49,60 +40,43 @@ const createOrder = async (newOrder) => {
         {
           $inc: {
             countInStock: -order.amount,
-            selled: +order.amount,
+            sold: +order.amount,
           },
         },
         { new: true }
       );
-      if (productData) {
-        return {
-          status: "OK",
-          message: "SUCCESS",
-        };
-      } else {
-        return {
-          status: "Err",
-          message: "ERR",
-          id: order.product,
-        };
-      }
-    });
 
-    const results = await Promise.all(checkEnough);
-    const orderProduct = results && results.filter((item) => item.id);
+      return productData
+        ? { status: "OK", message: "SUCCESS" }
+        : { status: "ERR", message: "ERR", id: order.product };
+    }));
+
+    const orderProduct = checkEnough.filter(item => item.id);
     if (orderProduct.length) {
-      const arrId = [];
-      newData.forEach((item) => {
-        arrId.push(item.id);
-      });
-      resolve({
+      const arrId = orderProduct.map(item => item.id);
+      return {
         status: "ERR",
         message: `San pham voi id: ${arrId.join(",")} khong du hang`,
-      });
+      };
     } else {
-      const createOrder = await Order.create({
+      const createdOrder = await Order.create({
         orderItems,
         shippingAddress: {
           fullName,
           address,
-          //city,
           phone,
         },
-        //paymentMethod,
+        paymentMethod,
         itemsPrice,
         shippingPrice,
         totalPrice,
-        user: user,
-        //isPaid,
-        //paidAt,
       });
-      if (createOrder) {
-        //await EmailService.sendEmailCreateOrder(email, orderItems);
-        resolve({
-          status: "OK",
-          message: "success",
-        });
-      }
+
+      return {
+        status: 'OK',
+        message: 'Order created successfully',
+        data: createdOrder, // Return the created order data
+      };
     }
   } catch (error) {
     return {
@@ -112,12 +86,14 @@ const createOrder = async (newOrder) => {
   }
 };
 
-const getAllOrderDetails = async (id) => {
+
+const getOrderByPhone = async (id) => {
   try {
     const order = await Order.find({
-      user: id,
+      'shippingAddress.phone': id,
     }).sort({ createdAt: -1, updatedAt: -1 });
-    if (order === null) {
+    console.log("fffffffffffff", order)
+    if (order.length === 0) {
       return {
         status: "ERR",
         message: "The order is not defined",
@@ -130,7 +106,6 @@ const getAllOrderDetails = async (id) => {
       data: order,
     };
   } catch (e) {
-    // console.log('e', e)
     return { status: 'ERR', message: error.message };
   }
 };
@@ -160,55 +135,64 @@ const getOrderDetails = async (id) => {
 
 const cancelOrderDetails = async (id, data) => {
   try {
-    let order = [];
-    const promises = data.map(async (order) => {
-      const productData = await Product.findOneAndUpdate(
+    const promises = data.map(async (orderItem) => {
+      console.log(data)
+      await Product.findOneAndUpdate(
         {
-          _id: order.product,
-          selled: { $gte: order.amount },
+          _id: orderItem.product,
+          sold: { $gte: orderItem.amount },
         },
         {
           $inc: {
-            countInStock: +order.amount,
-            selled: -order.amount,
+            countInStock: +orderItem.amount,
+            sold: -orderItem.amount,
           },
         },
         { new: true }
       );
-      if (productData) {
-        order = await Order.findByIdAndDelete(id);
-        if (order === null) {
-          return {
-            status: "ERR",
-            message: "The order is not defined",
-          };
-        }
-      } else {
+
+      // if (!productData) {
+      //   return {
+      //     status: "ERR",
+      //     message: `Product with id: ${orderItem.product} does not exist or has insufficient stock`,
+      //   };
+      // }
+
+      const deletedOrder = await Order.findByIdAndDelete(id);
+
+      if (!deletedOrder) {
         return {
-          status: "OK",
-          message: "ERR",
-          id: order.product,
+          status: "ERR",
+          message: "The order is not defined",
         };
       }
-    });
-    const results = await Promise.all(promises);
-    const newData = results && results[0] && results[0].id;
 
-    if (newData) {
       return {
-        status: "ERR",
-        message: `San pham voi id: ${newData} khong ton tai`,
+        status: "OK",
+        message: "Delete Order Success",
+        data: deletedOrder,
       };
+    });
+
+    const results = await Promise.all(promises);
+
+    // Check if any product doesn't exist or has insufficient stock
+    const errorResult = results.find((result) => result.status === "ERR");
+    if (errorResult) {
+      return errorResult;
     }
+
+    // All operations were successful
     return {
       status: "OK",
-      message: "success",
-      data: order,
+      message: "Success delete order",
+      data: results.map((result) => result.data),
     };
-  } catch (e) {
+  } catch (error) {
     return { status: 'ERR', message: error.message };
   }
 };
+
 
 const getAllOrder = async () => {
   try {
@@ -228,7 +212,7 @@ const getAllOrder = async () => {
 
 module.exports = {
   createOrder,
-  getAllOrderDetails,
+  getOrderByPhone,
   getOrderDetails,
   cancelOrderDetails,
   getAllOrder,

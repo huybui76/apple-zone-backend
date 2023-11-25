@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router()
 const OrderController = require('../controllers/OrderController');
-const { authMiddleware, authUserMiddleware } = require('../middleware/authMiddleware');
 
-router.post('/create/:id', authUserMiddleware, OrderController.createOrder)
-router.get('/get-all-order/:id', authUserMiddleware, OrderController.getAllOrderDetails)
+
+router.post('/create-order', OrderController.createOrder)
+router.get('/get-order-by-phone/:id', OrderController.getOrderByPhone)
 router.get('/get-details-order/:id', OrderController.getDetailsOrder)
-router.delete('/cancel-order/:id', authUserMiddleware, OrderController.cancelOrderDetails)
-router.get('/get-all-order', authMiddleware, OrderController.getAllOrder)
+router.delete('/cancel-order/:id', OrderController.cancelOrderDetails)
+router.get('/get-all-order', OrderController.getAllOrder)
 
 
 module.exports = router
