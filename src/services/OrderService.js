@@ -6,7 +6,8 @@ const createOrder = async (newOrder) => {
   try {
     const {
       orderItems,
-      paymentMethod,
+      shippingMethod
+      ,
       itemsPrice,
       shippingPrice,
       totalPrice,
@@ -17,9 +18,10 @@ const createOrder = async (newOrder) => {
 
     if (
       !orderItems ||
-      !paymentMethod ||
+      !shippingMethod
+      ||
       !itemsPrice ||
-      !shippingPrice ||
+
       !totalPrice ||
       !fullName ||
       !phone
@@ -66,7 +68,8 @@ const createOrder = async (newOrder) => {
           address,
           phone,
         },
-        paymentMethod,
+        shippingMethod
+        ,
         itemsPrice,
         shippingPrice,
         totalPrice,
@@ -92,7 +95,7 @@ const getOrderByPhone = async (id) => {
     const order = await Order.find({
       'shippingAddress.phone': id,
     }).sort({ createdAt: -1, updatedAt: -1 });
-    console.log("fffffffffffff", order)
+
     if (order.length === 0) {
       return {
         status: "ERR",
@@ -128,7 +131,7 @@ const getOrderDetails = async (id) => {
       data: order,
     };
   } catch (e) {
-    // console.log('e', e)
+
     return { status: 'ERR', message: error.message };
   }
 };
@@ -136,7 +139,7 @@ const getOrderDetails = async (id) => {
 const cancelOrderDetails = async (id, data) => {
   try {
     const promises = data.map(async (orderItem) => {
-      console.log(data)
+
       await Product.findOneAndUpdate(
         {
           _id: orderItem.product,

@@ -3,13 +3,13 @@ const Joi = require('joi');
 
 const orderSchema = Joi.object({
     itemsPrice: Joi.number().required(),
-    shippingPrice: Joi.number().required(),
+    shippingPrice: Joi.number(),
     totalPrice: Joi.number().required(),
     phone: Joi.number().required(),
     fullName: Joi.string().required(),
     address: Joi.string().required(),
     orderItems: Joi.array(),
-    paymentMethod: Joi.string().required(),
+    shippingMethod: Joi.number().required(),
 
     //user: Joi.string().required(),
     //paidAt: Joi.number().required(),
