@@ -116,7 +116,11 @@ const getAllProduct = async (limit, page, sort, filter) => {
 
         if (filter) {
             const [label, value] = filter;
-            query[label] = { $regex: value };
+            if (label === 'type') {
+                query[label] = value; // Truy vấn trực tiếp cho trường ObjectId
+            } else {
+                query[label] = { $regex: value }; // $regex cho các trường khác
+            }
         }
 
         const totalProduct = await Product.countDocuments(query);
