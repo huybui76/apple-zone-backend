@@ -119,7 +119,7 @@ const getAllProduct = async (limit, page, sort, filter) => {
             if (label === 'type') {
                 query[label] = value; // Truy vấn trực tiếp cho trường ObjectId
             } else {
-                query[label] = { $regex: value }; // $regex cho các trường khác
+                query[label] = { $regex: new RegExp(value, 'i') }; // $regex cho các trường khác, 'i' là case-insensitive
             }
         }
 
@@ -139,6 +139,7 @@ const getAllProduct = async (limit, page, sort, filter) => {
         return { status: 'ERR', message: error.message };
     }
 };
+
 const getCountProduct = async () => {
     try {
 
