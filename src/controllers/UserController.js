@@ -1,5 +1,5 @@
 const UserService = require('../services/UserService');
-const JwtService = require('../services/jwtService');
+const JwtService = require('../services/JwtService');
 const Joi = require('joi');
 
 const createUserSchema = Joi.object({
