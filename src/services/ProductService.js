@@ -117,9 +117,9 @@ const getAllProduct = async (limit, page, sort, filter) => {
         if (filter) {
             const [label, value] = filter;
             if (label === 'type') {
-                query[label] = value; // Truy vấn trực tiếp cho trường ObjectId
+                query[label] = value;
             } else {
-                query[label] = { $regex: new RegExp(value, 'i') }; // $regex cho các trường khác, 'i' là case-insensitive
+                query[label] = { $regex: new RegExp(value, 'i') };
             }
         }
 
