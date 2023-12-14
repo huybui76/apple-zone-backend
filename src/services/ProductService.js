@@ -140,20 +140,6 @@ const getAllProduct = async (limit, page, sort, filter) => {
     }
 };
 
-const getCountProduct = async () => {
-    try {
-
-        const totalProduct = await Product.find().select('-image');
-        return {
-            status: 'OK',
-            message: 'Success',
-            data: totalProduct,
-
-        };
-    } catch (error) {
-        return { status: 'ERR', message: error.message };
-    }
-};
 
 const getDetailsProduct = async (productId) => {
     try {
@@ -212,5 +198,5 @@ module.exports = {
     getAllProduct,
     getDetailsProduct,
     getProductByType,
-    getCountProduct
+
 };

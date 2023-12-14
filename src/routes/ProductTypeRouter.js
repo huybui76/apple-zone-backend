@@ -8,7 +8,6 @@ router.post('/', ProductTypeController.createProductType);
 router.put('/:productTypeId', ProductTypeController.updateProductType);
 router.delete('/:productTypeId', ProductTypeController.deleteProductType);
 router.get('/', ProductTypeController.getAllProductType);
-router.get('/count', ProductTypeController.getCountProductType);
 router.get('/:productTypeId', ProductTypeController.getDetailsProductType);
 
 

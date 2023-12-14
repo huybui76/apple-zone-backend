@@ -94,16 +94,7 @@ const getAllProductType = async (req, res) => {
         });
     }
 };
-const getCountProductType = async (req, res) => {
-    try {
-        const response = await ProductTypeService.getCountProductType();
-        return res.status(200).json(response);
-    } catch (e) {
-        return res.status(500).json({
-            message: e,
-        });
-    }
-};
+
 
 module.exports = {
     createProductType,
@@ -111,5 +102,5 @@ module.exports = {
     getDetailsProductType,
     deleteProductType,
     getAllProductType,
-    getCountProductType
+  
 };
