@@ -4,12 +4,12 @@ const ProductTypeController = require('../controllers/ProductTypeController');
 const { authMiddleware } = require('../middleware/authMiddleware');
 
 // User Routes
-router.post('/createProductType', ProductTypeController.createProductType);
-router.put('/updateProductType/:productTypeId', ProductTypeController.updateProductType);
-router.delete('/deleteProductType/:productTypeId', ProductTypeController.deleteProductType);
-router.get('/getAllProductsType', ProductTypeController.getAllProductType);
-router.get('/getCountProductType', ProductTypeController.getCountProductType);
-router.get('/getProductType/:productTypeId', ProductTypeController.getDetailsProductType);
+router.post('/', ProductTypeController.createProductType);
+router.put('/:productTypeId', ProductTypeController.updateProductType);
+router.delete('/:productTypeId', ProductTypeController.deleteProductType);
+router.get('/', ProductTypeController.getAllProductType);
+router.get('/count', ProductTypeController.getCountProductType);
+router.get('/:productTypeId', ProductTypeController.getDetailsProductType);
 
 
 module.exports = router;
