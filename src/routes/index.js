@@ -4,9 +4,9 @@ const ProductTypeRouter = require('./ProductTypeRouter')
 const OrderRouter = require('./OrderRouter')
 
 const routes = (app) => {
-    app.use('/api/user', UserRouter)
-    app.use('/api/product', ProductRouter)
-    app.use('/api/productType', ProductTypeRouter)
-    app.use('/api/order', OrderRouter)
+    app.use('/api/users', UserRouter)
+    app.use('/api/products', ProductRouter)
+    app.use('/api/productTypes', ProductTypeRouter)
+    app.use('/api/orders', OrderRouter)
 }
 module.exports = routes;
